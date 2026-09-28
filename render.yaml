@@ -2,34 +2,44 @@ services:
   - type: web
     name: student-management
     runtime: python
+    plan: free
+
     buildCommand: >-
       pip install -r backend/requirements.txt &&
       cd frontend && npm ci && npm run build &&
       cd ../backend && python manage.py collectstatic --noinput
+
     startCommand: >-
       cd backend &&
       python manage.py migrate &&
       python manage.py seed_data &&
       gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+
     healthCheckPath: /
+
     envVars:
       - key: SECRET_KEY
         generateValue: true
+
       - key: DEBUG
         value: "False"
+
       - key: ALLOWED_HOSTS
         value: ".onrender.com,localhost,127.0.0.1"
+
       - key: CORS_ALLOWED_ORIGINS
         value: "https://student-management-1-neea.onrender.com"
+
       - key: CSRF_TRUSTED_ORIGINS
         value: "https://student-management-1-neea.onrender.com"
+
       - key: DATABASE_URL
         fromDatabase:
           name: student-management-db
           property: connectionString
 
-# Render provisions PostgreSQL and exposes its connection string as DATABASE_URL.
 databases:
   - name: student-management-db
     databaseName: student_management
     user: student_management
+    plan: free
