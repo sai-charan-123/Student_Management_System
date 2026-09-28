@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
-    help = "Create the UniAdmit admin superuser if it does not already exist."
+    help = "Create or update the UniAdmit admin superuser."
 
     def handle(self, *args, **options):
         User = get_user_model()
@@ -28,48 +28,30 @@ class Command(BaseCommand):
                 "email": email,
                 "first_name": "Sai",
                 "last_name": "Charan",
-                "is_staff": True,
-                "is_superuser": True,
             },
         )
 
-        if created:
-            user.set_password(password)
-            user.save()
+        # Always make sure the admin account has the correct details.
+        user.email = email
+        user.first_name = "Sai"
+        user.last_name = "Charan"
+        user.is_staff = True
+        user.is_superuser = True
 
+        # Always synchronize the password with ADMIN_PASSWORD.
+        user.set_password(password)
+
+        user.save()
+
+        if created:
             self.stdout.write(
                 self.style.SUCCESS(
                     f"Superuser '{username}' created successfully."
                 )
             )
         else:
-            changed = False
-
-            if not user.is_staff:
-                user.is_staff = True
-                changed = True
-
-            if not user.is_superuser:
-                user.is_superuser = True
-                changed = True
-
-            if user.email != email:
-                user.email = email
-                changed = True
-
-            if user.first_name != "Sai":
-                user.first_name = "Sai"
-                changed = True
-
-            if user.last_name != "Charan":
-                user.last_name = "Charan"
-                changed = True
-
-            if changed:
-                user.save()
-
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Superuser '{username}' already exists and is configured."
+                    f"Superuser '{username}' updated successfully."
                 )
             )
