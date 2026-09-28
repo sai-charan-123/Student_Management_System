@@ -37,6 +37,7 @@ class Command(BaseCommand):
         user.last_name = "Charan"
         user.is_staff = True
         user.is_superuser = True
+        user.is_active=True
 
         # Always synchronize the password with ADMIN_PASSWORD.
         user.set_password(password)
